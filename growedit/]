@@ -1,0 +1,57 @@
+import Tkinter as tk
+import growthmode
+import math
+import random
+from util import *
+
+
+class HyphalMode(growthmode.GrowthMode):
+    def _set_parameters_and_growthpattern(self):
+        self.add_int_parameter("supress", "Neighbours to supress branching", 1, 100, 2)
+        self.add_double_parameter("neighbour_r", "Neighbour sensing radius", 1, 200, 1, 100)
+        self.add_bool_parameter("random", "Randomize")
+        self.add_double_parameter("stepsize", "Step size", 1, 100, 1, 10)
+        self.add_int_parameter("steptotal", "Number of steps", 100, 10000, 100)
+        self.add_int_parameter("maxnotips", "Max number of tips", 100, 5000, 1000)
+        self.growthpattern = HyphalGrowth
+
+class HyphalGrowth(growthmode.GrowthPattern):
+
+    def __init__(self, canvas, start, parameter_values):
+        self.random = parameter_values["random"]
+        self.canvas = canvas
+        self.activetips = [HyphalTip(start, parameter_values["neighbour_r"]**2, parameter_values["supress"], 0, parameter_values["maxnotips"])]
+
+        stepsize = parameter_values["stepsize"]
+        steptotal = parameter_values["steptotal"]
+
+        for i in range(0, steptotal):
+            for tip in self.activetips:
+                self.activetips.extend(tip.step(stepsize, self.activetips))
+            for tip in self.activetips:
+                self.canvas.create_line(tip.lastpos[0], tip.lastpos[1], tip.pos[0], tip.pos[1], tags="branch")
+
+class HyphalTip:
+
+    def __init__(self, position, neighbour_r2, supress, direction, maxnotips):
+        self.pos = position
+        self.lastpos= position
+        self.neighbour_r2 = neighbour_r2
+        self.supress = supress
+        self.direction = direction
+        self.maxnotips = maxnotips
+
+    def step(self, size, othertips):
+        self.lastpos = self.pos
+        self.pos = endpoint(self.pos, self.direction, size)
+        if len(othertips) < self.maxnotips and self.n_neighbours(othertips) < self.supress:
+                direction = random.uniform(0, 2*math.pi)
+                return [HyphalTip(self.pos, self.neighbour_r2, self.supress, direction, self.maxnotips)]
+        return []
+
+    def n_neighbours(self, othertips):
+        n_neighbours = 0
+        for other in othertips:
+            if distance2(self.pos, other.pos) < self.neighbour_r2:
+                n_neighbours+=1
+        return n_neighbours
