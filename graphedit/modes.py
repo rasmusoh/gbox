@@ -1,7 +1,8 @@
+import random
 import math
 
 standard_node_size = 10
-snap_dist = 550
+snap_dist = 2550
 
 class Mode:
 
@@ -26,7 +27,9 @@ class Mode:
         if "vertex" in tags:
             vertex_id =  int(tags[1])
             return self._graph.vs[vertex_id]
-        
+
+    def _distance2(self, coord1, coord2):
+        return (coord2[0]- coord1[0])**2 + (coord2[1] - coord1[1])**2
 
     def _reset_drag(self):
         '''End drag of an object'''
@@ -97,7 +100,7 @@ class ConnectMode(Mode):
             self._canvas.delete(self._drag_data["item"])
 
             to = self._get_closest_vertex(event.x, event.y)
-            if to != None and self._distance(to["coord"], (event.x, event.y)) <= snap_dist:
+            if to != None and self._distance2(to["coord"], (event.x, event.y)) <= snap_dist2:
                 self._drag_data["to"] = to
                 self._drawLine(to["coord"][0], to["coord"][1])
             else:
@@ -108,19 +111,11 @@ class ConnectMode(Mode):
         fromX, fromY = self._drag_data["from"]["coord"] 
         self._drag_data["item"] = self._canvas.create_line(fromX, fromY, toX, toY)
 
-    def _distance(self, coord1, coord2):
-        math.sqrt((coord2[0]- coord1[0])**2 + (coord2[1] - coord1[1])**2)
-
 class EraseMode(Mode):
     pass
 
 class TreeMode(Mode):
-
-    def vertex_click(self, event):
-        new = self._create_vertex((event.x, event.y))
-
-    def bg_click(self, event):
-        vertex =  self._get_closest_vertex(event.x, event.y)
+    pass
 
 class BarabasiMode(Mode):
 
@@ -128,20 +123,45 @@ class BarabasiMode(Mode):
         new = self._create_vertex((event.x, event.y))
         new_index = len(self._graph.vs) -1
         weights = self._graph.degree() ##newly created has degree zero = can't select yourself
-        for i in range(0, math.min(self._modvar, new_index):
-            choice = weighted_choice(weights)
-            self._graph.add_edge(new_index,choice)
+        for i in range(0, min(self._modvar.get(),new_index)):
+            choice = self.weighted_choice(weights)
+            self._create_edge(new_index,choice)
             weights[choice] = 0 ## cant select same again
 
-    def weighted_choice(weights):
+    def weighted_choice(self, weights):
        total = sum(weights)
        r = random.uniform(0, total)
        upto = 0
-       for w in range(0, len(weights)-1):
+       for w in range(0, len(weights)):
           if upto + weights[w] >= r:
-             return c
-          upto += w
+             return w
+          upto += weights[w]
+       print weights, r, upto
        assert False, "Shouldn't get here"
 
 class NeighbourMode(Mode):
-    pass
+    def bg_click(self, event):
+        new = self._create_vertex((event.x, event.y))
+        for i in range(0, self._modvar.get()):
+            self.connect_nn(new)
+
+    def vertex_click(self, event):
+        vertex =  self._get_closest_vertex(event.x, event.y)
+        for i in range(0, self._modvar.get()):
+            self.connect_nn(vertex)
+
+    def connect_nn(self, vertex):
+        mindist = float("inf")
+        nn = None
+        for neighbour in self._graph.vs:
+            dist = self._distance2(vertex["coord"], neighbour["coord"])
+            if dist < mindist and self.possible_new_neighbours(vertex, neighbour):
+                nn = neighbour
+                mindist = dist
+
+        if nn !=None:
+            self._create_edge(vertex.index, nn.index)
+
+    def possible_new_neighbours(self, from_, to):
+        p =from_.index != to.index and not self._graph.are_connected(from_.index, to.index)
+        return p

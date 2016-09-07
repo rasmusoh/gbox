@@ -40,8 +40,8 @@ class GraphEdit(tk.Tk):
             "BA":tk.PhotoImage(file = "../icons/ba-small.gif"),
             "TREE":tk.PhotoImage(file = "../icons/tree-small.gif"),
             "NEIGHBOUR":tk.PhotoImage(file = "../icons/neighbour-small.gif"),
-            "PLAY":tk.PhotoImage(file = "icons/play-small.gif"),
-            "PAUSE": tk.PhotoImage(file = "icons/pause-small.gif")}
+            "PLAY":tk.PhotoImage(file = "../icons/play-small.gif"),
+            "PAUSE": tk.PhotoImage(file = "../icons/pause-small.gif")}
 
         # create a canvas
         self._canvas = tk.Canvas(width=400, height=400)
@@ -52,7 +52,11 @@ class GraphEdit(tk.Tk):
         self.sidebar.pack(side=tk.RIGHT)
 
         self.modvar = tk.IntVar()
-        
+        self.modvar.set(1)
+        self.modvarentry = tk.Spinbox(self.sidebar, from_=0, to=10, textvariable = self.modvar)
+        self.modvarentry.pack()
+
+
         self.modes = {
                 "MOVE": MoveMode(self._canvas, self._graph, self.modvar),
                 "ADD": AddMode(self._canvas, self._graph, self.modvar), 
@@ -62,7 +66,6 @@ class GraphEdit(tk.Tk):
                 "TREE": TreeMode(self._canvas, self._graph, self.modvar),
                 "NEIGHBOUR": NeighbourMode(self._canvas, self._graph, self.modvar)
                 }
-
         self.mode = tk.StringVar()
         self.mode.set(self.modes.keys()[0])
         self.mode_menu = SelectorMenu(self.sidebar, self.modes.keys(), mode_descriptions, self.mode, self.icons)
@@ -147,7 +150,7 @@ class SelectorMenu:
         col = 0
         for option in options:
             button = tk.Radiobutton(frame, text = names[option], variable=var, value=option, image = icons[option],
-                    indicatoron = 0).pack(anchor=tk.NE).grid(column = col)
+                    indicatoron = 0).grid(column = col)
             col = (col + 1) % 2
 
 

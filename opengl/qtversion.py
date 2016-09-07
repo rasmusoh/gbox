@@ -6,6 +6,7 @@ import OpenGL.GL as gl
 import OpenGL.arrays.vbo as glvbo
 import tree
 
+
 class GLPlotWidget(QGLWidget):
     # default window size
     width, height = 1000, 800
@@ -92,7 +93,7 @@ if __name__ == '__main__':
             self.plot.set_data(self.data)
             self.layout = QtGui.QGridLayout(self)
             self.layout.addWidget(self.plot, 0,0)
-            self.layout.addWidget(SideBarWidget(self), 0,1)
+            self.layout.addWidget(SideBarWidget(self, self.redrawTree), 0,1)
             self.layout.setColumnStretch(0,1)
             self.setLayout(self.layout)
 
@@ -102,35 +103,56 @@ if __name__ == '__main__':
             self.data = data
             self.plot.update_data(self.data)
 
+    treetext = """class Tree:
+        def __init__(self, root, length, angle, gens):
+            self.root = root
+            self.tip = root + length*np.array([np.cos(angle), np.sin(angle)], dtype=np.float32)
+            self.children = []
+            degen = 0.8
+            if gens > 1:
+                self.children = [Tree(self.tip, length*degen, angle-np.pi/4, gens-1),
+                                 Tree(self.tip, length*degen, angle+np.pi/4, gens-1)]
+        def get_lines_np(self):
+            return np.array(self.get_lines())
+                
+        def get_lines(self):
+            lines = [self.root, self.tip]
+            for child in self.children:
+                lines.extend(child.get_lines())
+            return lines"""
+
     class SideBarWidget(QtGui.QWidget):
-        def __init__(self, parent):        
+        def __init__(self, parent, redraw):        
             
             super(SideBarWidget, self).__init__(parent)
             self.layout = QtGui.QVBoxLayout(self)
+            self.redraw = redraw
 
-            self.entry = MyQTextEdit()
-            self.entry.textChanged.connect(self.changed)
-            self.entry.setText("tree.Tree(np.array([0,1], dtype=np.float32), -0.3, np.pi/2,  12)")
-            self.layout.addWidget(self.entry)
+            self.createedit = QAlgorithmEdit()
+            self.createedit.textChanged.connect(self.createchanged)
+            self.createedit.setText("Tree(np.array([ 0, 1 ], dtype=np.float32), -0.3, np.pi/2,  12)")
+            self.layout.addWidget(self.createedit)
+
+            self.defedit = QAlgorithmEdit()
+            self.defedit.textChanged.connect(self.defchanged)
+            self.defedit.setText(treetext)
+            self.layout.addWidget(self.defedit)
 
             self.button1 = QtGui.QPushButton("Eval")
-            self.button1.clicked.connect(self.b1clicked)
+            self.button1.clicked.connect(self.defchanged)
             self.layout.addWidget(self.button1)
            
             self.setLayout(self.layout)
 
-        def changed(self):
-            try:
-                code = unicode(self.entry.toPlainText().toUtf8(), encoding="UTF-8")
-                tree = eval(code)
-                self.parentWidget().redrawTree(tree.get_lines_np())
-            except:
-                pass
+        def createchanged(self):
+            tree = eval(self.createedit.getunicode())
+            self.redraw(tree.get_lines_np())
 
-        def b1clicked(self):
-            self.tryinc()
+        def defchanged(self):
+            exec(self.defedit.getunicode(), globals())
+            self.createchanged()
 
-    class MyQTextEdit(QtGui.QTextEdit):
+    class QAlgorithmEdit(QtGui.QTextEdit):
         ctrlHeldDown = False
         shiftHeldDown = False
 
@@ -144,14 +166,14 @@ if __name__ == '__main__':
             if self.ctrlHeldDown and e.key() == QtCore.Qt.Key_Down:
                 self.trydec()
             else:
-                super(MyQTextEdit, self).keyPressEvent(e)
+                super(QAlgorithmEdit, self).keyPressEvent(e)
 
         def keyReleaseEvent(self, e):
             if e.key() == QtCore.Qt.Key_Control:
                 self.ctrlHeldDown = False
             elif e.key() == QtCore.Qt.Key_Shift:
                 self.shiftHeldDown = False
-            super(MyQTextEdit, self).keyPressEvent(e)
+            super(QAlgorithmEdit, self).keyPressEvent(e)
 
         def tryinc(self):
             if self.shiftHeldDown:
@@ -177,6 +199,11 @@ if __name__ == '__main__':
                     cursor = self.textCursor()
                     cursor.setPosition(m.start()+1)
                     self.setTextCursor(cursor)
+
+        def getunicode(self):
+            return unicode(self.toPlainText().toUtf8(), encoding="UTF-8")
+
+
 
     # create the Qt App and window
     app = QtGui.QApplication(sys.argv)

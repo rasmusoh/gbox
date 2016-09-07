@@ -13,3 +13,12 @@ class DegreeRule:
         for v in graph.vs:
             diff =  (10 + 25*v.degree()**2 - v["size"]) * self._regression_rate
             v["size"] += diff
+
+class KamadaKawaiRule:
+    
+    def __init__(self):
+        self._regression_rate = 1/1000.0
+        self.
+
+    def simulate_step(self, graph):
+        for v in graph.vs:
