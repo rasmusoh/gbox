@@ -203,8 +203,6 @@ if __name__ == '__main__':
         def getunicode(self):
             return unicode(self.toPlainText().toUtf8(), encoding="UTF-8")
 
-
-
     # create the Qt App and window
     app = QtGui.QApplication(sys.argv)
     window = TestWindow()
