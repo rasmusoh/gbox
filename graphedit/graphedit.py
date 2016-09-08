@@ -70,12 +70,10 @@ class GraphEdit(tk.Tk):
         self.mode.set(self.modes.keys()[0])
         self.mode_menu = SelectorMenu(self.sidebar, self.modes.keys(), mode_descriptions, self.mode, self.icons)
 
-        self.rules = {
-                "DEGREE": DegreeRule()
-                } 
+        self.rules = allrules
         self.current_rule = tk.StringVar()
-        self.current_rule.set(self.rules.keys()[0])
-        self.rule_menu = tk.OptionMenu(self.sidebar, self.current_rule, self.rules.keys()) 
+        self.current_rule.set(self.rules.keys()[1])
+        self.rule_menu = tk.OptionMenu(self.sidebar, self.current_rule, *self.rules.keys(), command = self.changerule) 
         self.rule_menu.pack()
 
         self.bind("<Key>", self.key_press)
@@ -85,6 +83,9 @@ class GraphEdit(tk.Tk):
         self._canvas.tag_bind("bg", "<ButtonPress-1>", self.bg_click)
 
         self.running = False
+
+    def changerule(self, val):
+        self.rules[self.current_rule.get()].changeto(self._graph)
 
     def mouse_release(self, event):
         if not self.running:
@@ -110,7 +111,17 @@ class GraphEdit(tk.Tk):
         if event.char in mode_shortcuts.keys(): 
             self.mode.set(mode_shortcuts[event.char])
         elif event.char == ' ':
-            self.running = not self.running
+            if self.running:
+                self.stop()
+            else:
+                self.run()
+
+    def run(self):
+        self.rules[self.current_rule.get()].simulate_start(self._graph, self._canvas.winfo_width(), self._canvas.winfo_height())
+        self.running = True
+
+    def stop(self):
+        self.running = False
 
     def update(self):
         if self.running:

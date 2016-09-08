@@ -2,7 +2,7 @@ import random
 import math
 
 standard_node_size = 10
-snap_dist = 2550
+snap_dist2 = 2550
 
 class Mode:
 
@@ -158,7 +158,6 @@ class NeighbourMode(Mode):
             if dist < mindist and self.possible_new_neighbours(vertex, neighbour):
                 nn = neighbour
                 mindist = dist
-
         if nn !=None:
             self._create_edge(vertex.index, nn.index)
 
