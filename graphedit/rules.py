@@ -18,7 +18,6 @@ class Rule:
 class KamadaKawaiRule(Rule):
     
     def __init__(self):
-        self._regression_rate = 1/1000.0
         self.layout = None
 
     def simulate_start(self, graph, w, h):
@@ -28,9 +27,10 @@ class KamadaKawaiRule(Rule):
         self.layout.fit_into(dim)
 
     def simulate_step(self, graph):
+        regression_rate = 1/1000.0
         for v in graph.vs:
-            diffx = (self.layout[v.index][0] - v["coord"][0]) * self._regression_rate
-            diffy = (self.layout[v.index][1] - v["coord"][1]) * self._regression_rate
+            diffx = (self.layout["destination"][0] - v["coord"][0]) * regression_rate
+            diffy = (self.layout["destination"][1] - v["coord"][1]) * regression_rate
             v["coord"] = v["coord"][0] + diffx, v["coord"][1] + diffy
 
 class EvcentRule(Rule):

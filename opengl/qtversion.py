@@ -86,7 +86,8 @@ if __name__ == '__main__':
 
             # generate random data points
             ##self.data = np.array(.2*rdn.randn(100000,2),dtype=np.float32)
-            ##self.data = np.array([[0.1,0.2],[0.1,0.2]] ,dtype=np.float32)
+            self.data = np.array([[0.1,0.2],[0.1,0.2]] ,dtype=np.float32)
+            self.plot.set_data(self.data)
 
             # initialize the GL widget
             self.plot = GLPlotWidget()
