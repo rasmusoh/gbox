@@ -37,6 +37,7 @@ class GLNetworkPlotWidget(QGLWidget):
 
         mesh = self.mesh.get_mesh()
 
+        gl.glEnableVertexAttribArray(0)
         gl.glVertexAttribPointer(0, 2, mesh.array_type, gl.GL_FALSE, 0, None)
         gl.glDrawElements(gl.GL_TRIANGLES, mesh.triangle_size, mesh.index_type, None)
 
