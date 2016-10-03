@@ -96,18 +96,21 @@ def edges_triangle_mesh(graph, hw):
 
 def edges_triangle_index(linearray):
     nrectangles = linearray.shape[0]/2
-    points_per_rectangle = 4 
+    points_per_rectangle = 4
     indeces_per_rectangle = 6
 
     pos = np.arange(0, nrectangles*points_per_rectangle, points_per_rectangle, dtype=np.uint32)
     rectangle_tiled = np.tile(rectangle_index_array, nrectangles)
     pos_repeated = np.repeat(pos, indeces_per_rectangle)
     return  rectangle_tiled + pos_repeated
- 
+
 def edges_line_offsets(linearray, hw):
-    offset = linearray[1::2] - linearray[0::2]
-    offset_sums = offset.sum(axis=1)
-    offset_sized = hw * offset / offset_sums[:, np.newaxis]
+    parallel = linearray[0::2] -linearray[1::2]
+    offset = np.empty_like(parallel)
+    offset[:,0] = -parallel[:,1]
+    offset[:,1] = parallel[:,0]
+    offset_norms = np.apply_along_axis(linalg.norm, 1, offset)
+    offset_sized = hw * offset / offset_norms[:, np.newaxis]
     offset_repeated = np.repeat(offset_sized,2, 0)
     return offset_repeated
 
@@ -137,4 +140,4 @@ def circle_index(smoothness):
     index[-1] = 1
     return index
 
-rectangle_index_array = np.array([0,1,2,3,2,1], dtype=np.uint32)
+rectangle_index_array = np.array([0,1,2,0,2,3], dtype=np.uint32)
