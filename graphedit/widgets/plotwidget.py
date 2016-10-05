@@ -5,13 +5,14 @@ import OpenGL.arrays.vbo as glvbo
 import mesh
 import numpy as np
 
-class GLNetworkPlotWidget(QGLWidget):
+class PlotWidget(QGLWidget):
     # default window size
     width, height = 1000, 800
     mousepressed = False
     ar = width/float(height)
     draginfo = np.zeros([2,2],dtype =np.float32)
     vselected = []
+    initialized = False
 
     def initializeGL(self):
         """Initialize OpenGL, VBOs, upload data on the GPU, etc.
@@ -22,8 +23,11 @@ class GLNetworkPlotWidget(QGLWidget):
         mesh = self.mesh.get_mesh()
         self.arrayVbo = glvbo.VBO(mesh.array)
         self.indexVbo = glvbo.VBO(mesh.index, target=gl.GL_ELEMENT_ARRAY_BUFFER)
+        self.initialized = True
 
     def meshChanged(self):
+        if not self.initialized: 
+            return
         mesh = self.mesh.get_mesh()
         self.arrayVbo.set_array(mesh.array)
         self.indexVbo.set_array(mesh.index)

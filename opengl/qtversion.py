@@ -26,7 +26,6 @@ class GLPlotWidget(QGLWidget):
         self.vbo = glvbo.VBO(self.data)
 
     def update_data(self, data):
-        self.vbo.set_array(data)
         self.count = data.shape[0]
         self.update()
 
@@ -34,6 +33,7 @@ class GLPlotWidget(QGLWidget):
         """Paint the scene.
         """
         # clear the buffer
+        self.vbo.set_array(data)
         gl.glClear(gl.GL_COLOR_BUFFER_BIT)
         # set yellow color for subsequent drawing rendering calls
         gl.glColor(1,1,0)
@@ -83,14 +83,13 @@ if __name__ == '__main__':
             
             super(MainWidget, self).__init__(parent)
             self.data = tree.Tree(np.array([0,1], dtype=np.float32), -0.3, np.pi/2,  12).get_lines_np()
+            # initialize the GL widget
+            self.plot = GLPlotWidget()
 
             # generate random data points
             ##self.data = np.array(.2*rdn.randn(100000,2),dtype=np.float32)
             self.data = np.array([[0.1,0.2],[0.1,0.2]] ,dtype=np.float32)
-            self.plot.set_data(self.data)
 
-            # initialize the GL widget
-            self.plot = GLPlotWidget()
             self.plot.set_data(self.data)
             self.layout = QtGui.QGridLayout(self)
             self.layout.addWidget(self.plot, 0,0)

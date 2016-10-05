@@ -140,4 +140,4 @@ def circle_index(smoothness):
     index[-1] = 1
     return index
 
-rectangle_index_array = np.array([0,1,2,0,2,3], dtype=np.uint32)
+rectangle_index_array = np.array([0,1,2,1,2,3], dtype=np.uint32)
