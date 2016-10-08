@@ -78,6 +78,7 @@ class MainWidget(QtGui.QWidget):
         return g
 
     def redraw(self):
+        print "redraw"
         self.plot.meshChanged()
 
 app = QtGui.QApplication(sys.argv)
