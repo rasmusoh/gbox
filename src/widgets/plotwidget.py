@@ -2,7 +2,6 @@ from PyQt4 import QtGui, QtCore, QtOpenGL
 from PyQt4.QtOpenGL import QGLWidget
 import OpenGL.GL as gl
 import OpenGL.arrays.vbo as glvbo
-import mesh
 import numpy as np
 
 class PlotWidget(QGLWidget):
@@ -20,15 +19,14 @@ class PlotWidget(QGLWidget):
         self.setMouseTracking(True)
         # background color
         gl.glClearColor(0,0,0,0)
-        mesh = self.mesh.get_mesh()
-        self.arrayVbo = glvbo.VBO(mesh.array)
-        self.indexVbo = glvbo.VBO(mesh.index, target=gl.GL_ELEMENT_ARRAY_BUFFER)
+        self.arrayVbo = glvbo.VBO(self.mesh.array)
+        self.indexVbo = glvbo.VBO(self.mesh.index, target=gl.GL_ELEMENT_ARRAY_BUFFER)
         self.initialized = True
 
-    def meshChanged(self):
+    def meshChanged(self, mesh):
+        self.mesh = mesh
         if not self.initialized: 
             return
-        mesh = self.mesh.get_mesh()
         self.arrayVbo.set_array(mesh.array)
         self.indexVbo.set_array(mesh.index)
         self.update()
@@ -39,11 +37,9 @@ class PlotWidget(QGLWidget):
         self.arrayVbo.bind()
         self.indexVbo.bind()
 
-        mesh = self.mesh.get_mesh()
-
         gl.glEnableVertexAttribArray(0)
-        gl.glVertexAttribPointer(0, 2, mesh.array_type, gl.GL_FALSE, 0, None)
-        gl.glDrawElements(gl.GL_TRIANGLES, mesh.triangle_size, mesh.index_type, None)
+        gl.glVertexAttribPointer(0, 2, self.mesh.array_type, gl.GL_FALSE, 0, None)
+        gl.glDrawElements(gl.GL_TRIANGLES, self.mesh.triangle_size, self.mesh.index_type, None)
 
     def paintBox(self):
         gl.glBegin(gl.GL_LINE_LOOP)

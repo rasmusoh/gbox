@@ -58,15 +58,16 @@ class MainWidget(QtGui.QWidget):
 
     def __init__(self, parent):
         super(MainWidget, self).__init__(parent)
-        graph = self.testgraph()
+        self.graph = self.testgraph()
         self.plot = plotwidget.PlotWidget()
-        self.plot.mesh = mesh.NetworkThickMesh(25, 0.002, graph)
-        self.sidebar = SideBarWidget(self, graph, self.redraw)
+        self.mesh = mesh.NetworkThickMesh(25, 0.002, self.graph)
+        self.plot.meshChanged(self.mesh.get_mesh())
+        self.sidebar = SideBarWidget(self, self.graph, self.redraw)
         self.layout = QtGui.QGridLayout(self)
         self.layout.addWidget(self.plot, 0,0)
         self.layout.addWidget(self.sidebar, 0,1)
-        self.layout.setColumnStretch(0,3);
-        self.layout.setColumnStretch(1,1);
+        self.layout.setColumnStretch(0,3)
+        self.layout.setColumnStretch(1,1)
         self.setLayout(self.layout)
 
         self.width, self.height = self.plot.width + self.sidebar.width, self.plot.height
@@ -78,8 +79,8 @@ class MainWidget(QtGui.QWidget):
         return g
 
     def redraw(self):
-        print "redraw"
-        self.plot.meshChanged()
+        self.mesh.update_mesh(self.graph)
+        self.plot.meshChanged(self.mesh.get_mesh())
 
 app = QtGui.QApplication(sys.argv)
 window = MainWindow()
